@@ -6,6 +6,7 @@ import {
 import { usePlayer } from '../PlayerContext';
 import { GENRES_DATA } from '../genresData';
 import { PLAYLIST_COVERS } from '../genreImages';
+import { apiUrl, resolveAudioUrl } from '../config';
 
 export default function Playlists() {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
@@ -40,7 +41,7 @@ export default function Playlists() {
   }, []);
 
   const fetchPlaylists = () => {
-    fetch('http://localhost:8000/api/playlists')
+    fetch(apiUrl('/api/playlists'))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -59,7 +60,7 @@ export default function Playlists() {
   const selectPlaylist = (pl) => {
     setSelectedPlaylist(pl);
     setLoadingSongs(true);
-    fetch(`http://localhost:8000/api/playlists/${pl.id}/songs`)
+    fetch(apiUrl(`/api/playlists/${pl.id}/songs`))
       .then(res => res.json())
       .then(data => {
         setPlaylistSongs(data.songs || []);
@@ -73,7 +74,7 @@ export default function Playlists() {
     if (!newTitle.trim()) return;
 
     try {
-      const res = await fetch('http://localhost:8000/api/playlists', {
+      const res = await fetch(apiUrl('/api/playlists'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,7 +102,7 @@ export default function Playlists() {
     e.preventDefault();
     setIsGenerating(true);
     try {
-      const historyRes = await fetch('http://localhost:8000/api/history?limit=200');
+      const historyRes = await fetch(apiUrl('/api/history?limit=200'));
       const allHistory = await historyRes.json();
       
       const matching = allHistory.filter(s => 
@@ -111,7 +112,7 @@ export default function Playlists() {
       const plTitle = `${targetGenre.charAt(0).toUpperCase() + targetGenre.slice(1)} Mix`;
       const plDesc = `Your personal ${targetGenre.toUpperCase()} genre mix, powered by vibecheck.ai neural classification.`;
 
-      const createRes = await fetch('http://localhost:8000/api/playlists', {
+      const createRes = await fetch(apiUrl('/api/playlists'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +127,7 @@ export default function Playlists() {
 
       const uniqueSongIds = Array.from(new Set(matching.map(s => s.song_id)));
       for (const sId of uniqueSongIds) {
-        await fetch('http://localhost:8000/api/playlists/add-song', {
+        await fetch(apiUrl('/api/playlists/add-song'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -153,7 +154,7 @@ export default function Playlists() {
     if (!window.confirm("Delete this playlist from your library?")) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/playlists/${plId}`, {
+      const res = await fetch(apiUrl(`/api/playlists/${plId}`), {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error("Could not delete playlist");
@@ -171,7 +172,7 @@ export default function Playlists() {
     e.stopPropagation();
     if (!selectedPlaylist) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/playlists/${selectedPlaylist.id}/songs/${plSongId}`, {
+      const res = await fetch(apiUrl(`/api/playlists/${selectedPlaylist.id}/songs/${plSongId}`), {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error("Could not remove song");

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { History as HistoryIcon, Play, Trash2, Zap } from 'lucide-react';
 import { usePlayer } from '../PlayerContext';
+import { apiUrl, resolveAudioUrl } from '../config';
 
 export default function History() {
   const { playTrack } = usePlayer();
@@ -13,7 +14,7 @@ export default function History() {
 
   const fetchHistory = () => {
     setLoading(true);
-    fetch('http://localhost:8000/api/history?limit=100')
+    fetch(apiUrl('/api/history?limit=100'))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setHistoryItems(data);
@@ -24,7 +25,7 @@ export default function History() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/history/${id}`, {
+      const res = await fetch(apiUrl(`/api/history/${id}`), {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error("Could not delete history item");

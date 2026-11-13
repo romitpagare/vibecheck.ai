@@ -6,6 +6,7 @@ import {
 import { usePlayer } from '../PlayerContext';
 import { GENRES_DATA } from '../genresData';
 import { GENRE_IMAGES, PLAYLIST_COVERS } from '../genreImages';
+import { apiUrl, resolveAudioUrl } from '../config';
 
 const ALBUM_COVERS = PLAYLIST_COVERS;
 
@@ -17,14 +18,14 @@ export default function Home({ setActiveTab, onPreloadUrl }) {
   const [selectedGenreTab, setSelectedGenreTab] = useState('All');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/history?limit=6')
+    fetch(apiUrl('/api/history?limit=6'))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setRecentTracks(data);
       })
       .catch(() => {});
 
-    fetch('http://localhost:8000/api/playlists')
+    fetch(apiUrl('/api/playlists'))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setSamplePlaylists(data);

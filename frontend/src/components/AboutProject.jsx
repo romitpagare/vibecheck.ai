@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Cpu, Layers, Sparkles, BookOpen, CheckCircle, HelpCircle, ArrowRight } from 'lucide-react';
+import { apiUrl } from '../config';
 
 export default function AboutProject() {
   const [modelInfo, setModelInfo] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/model-info')
+    fetch(apiUrl('/api/model-info'))
       .then(res => res.json())
       .then(data => setModelInfo(data))
       .catch(() => {});

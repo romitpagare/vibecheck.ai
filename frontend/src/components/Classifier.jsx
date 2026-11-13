@@ -8,6 +8,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 
 import { usePlayer } from '../PlayerContext';
 import { GENRES_DATA } from '../genresData';
 import { getTopTenSongsForGenre } from '../topGenreSongs';
+import { apiUrl, resolveAudioUrl } from '../config';
 
 export default function Classifier({ initialUrl = "" }) {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
@@ -36,7 +37,7 @@ export default function Classifier({ initialUrl = "" }) {
 
     fetchPlaylists();
 
-    fetch('http://localhost:8000/api/sample-tracks')
+    fetch(apiUrl('/api/sample-tracks'))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setSampleTracks(data);
@@ -45,7 +46,7 @@ export default function Classifier({ initialUrl = "" }) {
   }, [initialUrl]);
 
   const fetchPlaylists = () => {
-    fetch('http://localhost:8000/api/playlists')
+    fetch(apiUrl('/api/playlists'))
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -90,7 +91,7 @@ export default function Classifier({ initialUrl = "" }) {
       }
 
       try {
-        const response = await fetch('http://localhost:8000/api/classify/url', {
+        const response = await fetch(apiUrl('/api/classify/url'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: youtubeUrl.trim() }),
@@ -104,7 +105,7 @@ export default function Classifier({ initialUrl = "" }) {
         const data = await response.json();
         setPredictionResult(data);
         if (data.audio_url) {
-          setAudioPreviewUrl(`http://localhost:8000${data.audio_url}`);
+          setAudioPreviewUrl(resolveAudioUrl(data.audio_url));
         }
       } catch (err) {
         setErrorMsg(err.message);
@@ -122,7 +123,7 @@ export default function Classifier({ initialUrl = "" }) {
       formData.append('file', selectedFile);
 
       try {
-        const response = await fetch('http://localhost:8000/api/classify/upload', {
+        const response = await fetch(apiUrl('/api/classify/upload'), {
           method: 'POST',
           body: formData,
         });
@@ -146,7 +147,7 @@ export default function Classifier({ initialUrl = "" }) {
     if (!predictionResult || !predictionResult.song_id || !selectedPlaylistId) return;
 
     try {
-      const response = await fetch('http://localhost:8000/api/playlists/add-song', {
+      const response = await fetch(apiUrl('/api/playlists/add-song'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -273,8 +274,8 @@ export default function Classifier({ initialUrl = "" }) {
                     key={sample.id}
                     type="button"
                     onClick={() => {
-                      setYoutubeUrl(`http://localhost:8000${sample.audio_url}`);
-                      setAudioPreviewUrl(`http://localhost:8000${sample.audio_url}`);
+                      setYoutubeUrl(resolveAudioUrl(sample.audio_url));
+                      setAudioPreviewUrl(resolveAudioUrl(sample.audio_url));
                     }}
                     className="px-3 py-1.5 rounded-full text-xs font-medium border border-[#282828] bg-[#121212] text-[#B3B3B3] hover:border-[#A78BFA] hover:text-white transition-colors"
                   >
