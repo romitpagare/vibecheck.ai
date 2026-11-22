@@ -75,18 +75,16 @@ def init_db():
 
     conn.commit()
 
-    # Seed sample playlists if empty
-    cursor.execute("SELECT COUNT(*) as count FROM playlists")
+    # Ensure master 'All Analyzed Tracks' playlist exists
+    cursor.execute("SELECT COUNT(*) as count FROM playlists WHERE name = 'All Analyzed Tracks'")
     count = cursor.fetchone()["count"]
     if count == 0:
         now = datetime.utcnow().isoformat()
         cursor.execute("""
         INSERT INTO playlists (name, description, cover_color, is_sample, created_at)
         VALUES 
-        ('Campus Study Chill', 'Curated acoustic & ambient tracks for late-night college study sessions.', '#3B6E58', 1, ?),
-        ('Minor Project Demo Reel', 'GTZAN demonstration tracks across diverse musical spectrums.', '#B45339', 1, ?),
-        ('High Energy Rhythms', 'Fast-paced rock, metal, and electronic beats for active listening.', '#4A5560', 1, ?)
-        """, (now, now, now))
+        ('All Analyzed Tracks', 'Complete collection of songs analyzed by vibecheck.ai.', '#1DB954', 0, ?)
+        """, (now,))
         conn.commit()
 
     conn.close()

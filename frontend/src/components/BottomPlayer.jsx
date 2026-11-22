@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePlayer } from '../PlayerContext';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, Download, RotateCcw, RotateCw } from 'lucide-react';
 
 export default function BottomPlayer() {
   const {
@@ -11,10 +11,15 @@ export default function BottomPlayer() {
     volume,
     togglePlay,
     seek,
+    skipTime,
     changeVolume,
     handleNext,
-    handlePrev
+    handlePrev,
+    downloadTrack
   } = usePlayer();
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragTime, setDragTime] = useState(0);
 
   if (!currentTrack) return null;
 
@@ -23,6 +28,27 @@ export default function BottomPlayer() {
     const mins = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
     return `${mins}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const effectiveDuration = (duration && !isNaN(duration) && duration > 0) 
+    ? duration 
+    : (currentTrack.duration || 30);
+
+  const displayTime = isDragging ? dragTime : currentTime;
+
+  const handleSliderStart = () => {
+    setIsDragging(true);
+    setDragTime(currentTime || 0);
+  };
+
+  const handleSliderInput = (e) => {
+    setDragTime(parseFloat(e.target.value));
+  };
+
+  const handleSliderChange = (e) => {
+    const val = parseFloat(e.target.value);
+    setIsDragging(false);
+    seek(val);
   };
 
   return (
@@ -51,13 +77,21 @@ export default function BottomPlayer() {
 
         {/* Center Controls & Scrubber */}
         <div className="flex flex-col items-center flex-shrink-0 sm:flex-1 sm:max-w-xl">
-          <div className="flex items-center gap-3 sm:gap-5 mb-0.5 sm:mb-1.5">
+          <div className="flex items-center gap-2 sm:gap-4 mb-0.5 sm:mb-1.5">
             <button
               onClick={handlePrev}
               title="Previous"
-              className="text-[#B3B3B3] hover:text-white transition-colors hidden sm:inline"
+              className="text-[#B3B3B3] hover:text-white transition-colors hidden sm:inline p-1"
             >
-              <SkipBack size={18} />
+              <SkipBack size={17} />
+            </button>
+            <button
+              onClick={() => skipTime(-10)}
+              title="Rewind 10 seconds"
+              className="text-[#B3B3B3] hover:text-[#A78BFA] transition-colors p-1 flex items-center gap-0.5"
+            >
+              <RotateCcw size={15} />
+              <span className="text-[10px] font-mono font-bold hidden md:inline">-10s</span>
             </button>
             <button
               onClick={togglePlay}
@@ -67,49 +101,71 @@ export default function BottomPlayer() {
               {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="translate-x-0.5" />}
             </button>
             <button
+              onClick={() => skipTime(10)}
+              title="Forward 10 seconds"
+              className="text-[#B3B3B3] hover:text-[#A78BFA] transition-colors p-1 flex items-center gap-0.5"
+            >
+              <RotateCw size={15} />
+              <span className="text-[10px] font-mono font-bold hidden md:inline">+10s</span>
+            </button>
+            <button
               onClick={handleNext}
               title="Next"
-              className="text-[#B3B3B3] hover:text-white transition-colors hidden sm:inline"
+              className="text-[#B3B3B3] hover:text-white transition-colors hidden sm:inline p-1"
             >
-              <SkipForward size={18} />
+              <SkipForward size={17} />
             </button>
           </div>
 
-          {/* Scrubber slider - hidden on very small phones, visible on sm and up */}
+          {/* Scrubber slider */}
           <div className="w-full hidden sm:flex items-center gap-3 text-xs text-[#B3B3B3] font-mono">
-            <span className="w-8 text-right">{formatTime(currentTime)}</span>
+            <span className="w-9 text-right font-semibold text-white">{formatTime(displayTime)}</span>
             <div className="relative flex-1 flex items-center group">
               <input
                 type="range"
                 min="0"
-                max={duration || 100}
+                max={effectiveDuration}
                 step="0.1"
-                value={currentTime || 0}
-                onChange={(e) => seek(parseFloat(e.target.value))}
-                className="w-full h-1 bg-[#4D4D4D] group-hover:bg-[#5E5E5E] rounded-lg appearance-none cursor-pointer accent-[#A78BFA]"
+                value={displayTime || 0}
+                onMouseDown={handleSliderStart}
+                onTouchStart={handleSliderStart}
+                onInput={handleSliderInput}
+                onChange={handleSliderChange}
+                className="w-full h-1.5 bg-[#4D4D4D] group-hover:bg-[#5E5E5E] rounded-lg appearance-none cursor-pointer accent-[#A78BFA] transition-all"
               />
             </div>
-            <span className="w-8">{formatTime(duration)}</span>
+            <span className="w-9">{formatTime(effectiveDuration)}</span>
           </div>
         </div>
 
-        {/* Volume (Right) */}
-        <div className="hidden md:flex items-center justify-end gap-3 w-1/4">
+        {/* Right Controls: Download & Volume */}
+        <div className="flex items-center justify-end gap-2.5 sm:gap-3 sm:w-1/4">
           <button
-            onClick={() => changeVolume(volume > 0 ? 0 : 0.8)}
-            className="text-[#B3B3B3] hover:text-white transition-colors"
+            onClick={() => downloadTrack(currentTrack)}
+            title="Download song in MP3 format"
+            className="p-2 rounded-full bg-[#282828] hover:bg-[#A78BFA] text-[#CCCCCC] hover:text-black transition-all flex items-center gap-1.5 shadow-md group"
           >
-            {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            <Download size={16} className="group-hover:translate-y-0.5 transition-transform" />
+            <span className="hidden lg:inline text-[11px] font-bold">Download MP3</span>
           </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.02"
-            value={volume}
-            onChange={(e) => changeVolume(parseFloat(e.target.value))}
-            className="w-24 h-1 bg-[#4D4D4D] rounded-lg appearance-none cursor-pointer accent-[#A78BFA]"
-          />
+
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => changeVolume(volume > 0 ? 0 : 0.8)}
+              className="text-[#B3B3B3] hover:text-white transition-colors"
+            >
+              {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.02"
+              value={volume}
+              onChange={(e) => changeVolume(parseFloat(e.target.value))}
+              className="w-20 lg:w-24 h-1 bg-[#4D4D4D] rounded-lg appearance-none cursor-pointer accent-[#A78BFA]"
+            />
+          </div>
         </div>
 
       </div>

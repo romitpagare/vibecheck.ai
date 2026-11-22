@@ -19,7 +19,7 @@ export default function AboutProject() {
       <div className="space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A78BFA]/15 border border-[#A78BFA]/30 text-[#A78BFA] text-xs font-semibold uppercase tracking-wider">
           <Sparkles size={14} />
-          <span>BCA Minor Project Portfolio</span>
+          <span>Production AI Audio Intelligence</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
           vibecheck.ai
@@ -29,11 +29,11 @@ export default function AboutProject() {
         </p>
       </div>
 
-      {/* Simple Project Overview (For Teachers & Viva) */}
+      {/* Project Overview */}
       <div className="p-6 bg-[#181818] rounded-2xl border border-[#282828] shadow-md space-y-3">
         <div className="flex items-center gap-2">
           <BookOpen className="text-[#A78BFA]" size={20} />
-          <h2 className="text-base font-extrabold text-white">Project Overview (In Simple Words)</h2>
+          <h2 className="text-base font-extrabold text-white">Project Overview & Architecture</h2>
         </div>
         <p className="text-sm text-[#CCCCCC] leading-relaxed">
           Music carries emotions and distinct characteristics, but sorting through songs manually takes hours. <strong>vibecheck.ai</strong> was built to make music discovery effortless and intelligent. Simply drop in a track from YouTube, Spotify, or upload an audio file — our system listens closely by analyzing <strong>57 acoustic dimensions</strong> (including tempo BPM, vocal warmth, energy, and instrument tone) using <strong>Librosa</strong>. Our trained <strong>Random Forest model</strong> then predicts the track's musical genre and vibe with pinpoint accuracy, complete with curated song recommendations to match your sound.
@@ -51,10 +51,10 @@ export default function AboutProject() {
           <div className="p-4 rounded-xl bg-[#121212] border border-[#282828] space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#A78BFA]">
-                Team Member 1
+                Machine Learning & DSP
               </span>
               <span className="text-[11px] font-mono text-[#CCCCCC] bg-[#282828] px-2 py-0.5 rounded-full font-semibold">
-                EN24CA3020174
+                ML Engineer
               </span>
             </div>
             <h4 className="text-lg font-black text-white">Romit Pagare</h4>
@@ -68,10 +68,10 @@ export default function AboutProject() {
           <div className="p-4 rounded-xl bg-[#121212] border border-[#282828] space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#A78BFA]">
-                Team Member 2
+                Full-Stack & Cloud Systems
               </span>
               <span className="text-[11px] font-mono text-[#CCCCCC] bg-[#282828] px-2 py-0.5 rounded-full font-semibold">
-                EN24CA3020173
+                Lead Architect
               </span>
             </div>
             <h4 className="text-lg font-black text-white">Ritika Pandav</h4>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { History as HistoryIcon, Play, Trash2, Zap } from 'lucide-react';
+import { History as HistoryIcon, Play, Trash2, Zap, Download } from 'lucide-react';
 import { usePlayer } from '../PlayerContext';
 import { apiUrl, resolveAudioUrl } from '../config';
 
 export default function History() {
-  const { playTrack } = usePlayer();
+  const { playTrack, downloadTrack } = usePlayer();
   const [historyItems, setHistoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -102,19 +102,24 @@ export default function History() {
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {item.audio_url && (
-                          <button
-                            onClick={() => playTrack(item)}
-                            title="Play audio"
-                            className="p-1.5 rounded-full bg-gray-100 dark:bg-[#1A202C] hover:bg-[#00F0FF] hover:text-black transition-colors text-gray-800 dark:text-gray-200"
-                          >
-                            <Play size={13} className="translate-x-0.5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => playTrack(item)}
+                          title="Play audio"
+                          className="p-1.5 rounded-full bg-gray-100 dark:bg-[#1A202C] hover:bg-[#A78BFA] hover:text-black transition-colors text-gray-800 dark:text-gray-200"
+                        >
+                          <Play size={13} className="translate-x-0.5" />
+                        </button>
+                        <button
+                          onClick={() => downloadTrack(item)}
+                          title="Download song in MP3 format"
+                          className="p-1.5 rounded-full bg-gray-100 dark:bg-[#1A202C] hover:bg-[#A78BFA] hover:text-black transition-colors text-gray-800 dark:text-gray-200"
+                        >
+                          <Download size={13} />
+                        </button>
                         <button
                           onClick={() => handleDelete(item.id)}
                           title="Remove record"
-                          className="p-1.5 rounded-full hover:bg-[#FF007F]/20 text-gray-400 hover:text-[#FF007F] transition-colors"
+                          className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
                         >
                           <Trash2 size={13} />
                         </button>

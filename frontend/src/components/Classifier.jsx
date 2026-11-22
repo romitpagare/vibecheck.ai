@@ -11,7 +11,7 @@ import { getTopTenSongsForGenre } from '../topGenreSongs';
 import { apiUrl, resolveAudioUrl } from '../config';
 
 export default function Classifier({ initialUrl = "" }) {
-  const { playTrack, currentTrack, isPlaying } = usePlayer();
+  const { playTrack, currentTrack, isPlaying, downloadTrack } = usePlayer();
   
   const [activeMode, setActiveMode] = useState('youtube'); // 'youtube' | 'upload'
   const [youtubeUrl, setYoutubeUrl] = useState(initialUrl || '');
@@ -104,6 +104,8 @@ export default function Classifier({ initialUrl = "" }) {
 
         const data = await response.json();
         setPredictionResult(data);
+        fetchPlaylists();
+        fetchPlaylists();
         if (data.audio_url) {
           setAudioPreviewUrl(resolveAudioUrl(data.audio_url));
         }
@@ -135,6 +137,7 @@ export default function Classifier({ initialUrl = "" }) {
 
         const data = await response.json();
         setPredictionResult(data);
+        fetchPlaylists();
       } catch (err) {
         setErrorMsg(err.message);
       } finally {
@@ -391,15 +394,33 @@ export default function Classifier({ initialUrl = "" }) {
               <h2 className="text-xl sm:text-2xl font-black text-white capitalize leading-tight">
                 {predictionResult.title}
               </h2>
+              <div className="flex items-center gap-2 pt-1.5 flex-wrap">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+                  <CheckCircle2 size={12} />
+                  <span>Saved to All Analyzed Tracks</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#A78BFA]/15 border border-[#A78BFA]/30 text-[#A78BFA] text-[11px] font-bold">
+                  <Music size={12} />
+                  <span>Added to {predictionResult.predicted_genre?.toUpperCase()} Mix</span>
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => playTrack(predictionResult)}
                 className="px-4 py-2 rounded-full bg-[#A78BFA] text-black text-xs font-black hover:bg-[#C4B5FD] transition-transform hover:scale-105 flex items-center gap-1.5 shadow-md"
               >
                 <Play size={14} className="fill-black translate-x-0.5" />
                 <span>Play Song</span>
+              </button>
+              <button
+                onClick={() => downloadTrack(predictionResult)}
+                className="px-4 py-2 rounded-full bg-[#242424] hover:bg-[#303030] border border-[#3E3E3E] text-white text-xs font-bold transition-transform hover:scale-105 flex items-center gap-1.5 shadow-md"
+                title="Download classified track as MP3"
+              >
+                <Download size={14} className="text-[#A78BFA]" />
+                <span>Download MP3</span>
               </button>
               <button
                 onClick={handleExportResult}
@@ -598,48 +619,66 @@ export default function Classifier({ initialUrl = "" }) {
                     </div>
 
                     <div className="space-y-1">
-                      {recommendedTracks.map((track, i) => (
-                        <div 
-                          key={i} 
-                          className="group flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[#282828] transition-colors cursor-pointer"
-                          onClick={() => {
-                            playTrack({
-                              title: track.title,
-                              filename: `${track.artist} - ${track.title}`,
-                              predicted_genre: matchedGenreMeta.name,
-                              audio_url: audioPreviewUrl || ""
-                            });
-                          }}
-                        >
-                          <div className="flex items-center gap-3.5 min-w-0">
-                            {/* Number / Hover Play Icon */}
-                            <div className="w-5 text-center text-xs font-semibold text-[#727272] group-hover:text-white flex-shrink-0">
-                              <span className="group-hover:hidden">{i + 1}</span>
-                              <Play size={14} className="hidden group-hover:inline text-[#A78BFA] fill-[#A78BFA]" />
+                      {recommendedTracks.map((track, i) => {
+                        const recTrackObj = {
+                          title: track.title,
+                          filename: `${track.artist} - ${track.title}`,
+                          predicted_genre: matchedGenreMeta.id || matchedGenreMeta.name,
+                          audio_url: audioPreviewUrl || ""
+                        };
+                        const isCurrentRec = currentTrack && currentTrack.title === track.title;
+                        const isPlayingRec = isCurrentRec && isPlaying;
+
+                        return (
+                          <div 
+                            key={i} 
+                            className={`group flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
+                              isCurrentRec ? 'bg-[#282828] text-[#A78BFA]' : 'hover:bg-[#242424] text-white'
+                            }`}
+                            onClick={() => playTrack(recTrackObj)}
+                          >
+                            <div className="flex items-center gap-3.5 min-w-0">
+                              {/* Number / Hover Play Icon */}
+                              <div className="w-5 text-center text-xs font-semibold text-[#727272] group-hover:text-white flex-shrink-0">
+                                <span className="group-hover:hidden">{isPlayingRec ? '▶' : i + 1}</span>
+                                <Play size={14} className="hidden group-hover:inline text-[#A78BFA] fill-[#A78BFA]" />
+                              </div>
+
+                              {/* Mini Album Cover placeholder */}
+                              <div className="w-10 h-10 rounded-md bg-[#242424] group-hover:bg-[#333333] flex items-center justify-center flex-shrink-0 text-[#A78BFA] font-bold text-xs shadow-inner">
+                                <Music size={16} />
+                              </div>
+
+                              {/* Track Details */}
+                              <div className="min-w-0 truncate">
+                                <p className={`text-sm font-bold transition-colors truncate ${isCurrentRec ? 'text-[#A78BFA]' : 'text-white group-hover:text-[#A78BFA]'}`}>
+                                  {track.title}
+                                </p>
+                                <p className="text-xs text-[#A7A7A7] truncate">
+                                  {track.artist}
+                                </p>
+                              </div>
                             </div>
 
-                            {/* Mini Album Cover placeholder */}
-                            <div className="w-10 h-10 rounded-md bg-[#242424] group-hover:bg-[#333333] flex items-center justify-center flex-shrink-0 text-[#A78BFA] font-bold text-xs shadow-inner">
-                              <Music size={16} />
-                            </div>
-
-                            {/* Track Details */}
-                            <div className="min-w-0 truncate">
-                              <p className="text-sm font-bold text-white group-hover:text-[#A78BFA] transition-colors truncate">
-                                {track.title}
-                              </p>
-                              <p className="text-xs text-[#A7A7A7] truncate">
-                                {track.artist}
-                              </p>
+                            {/* Year & Download MP3 Button */}
+                            <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                              <span className="text-xs font-medium text-[#727272] font-mono">
+                                {track.year}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadTrack(recTrackObj);
+                                }}
+                                title="Download song in MP3 format"
+                                className="p-1 rounded text-[#727272] hover:text-[#A78BFA] opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Download size={15} />
+                              </button>
                             </div>
                           </div>
-
-                          {/* Year / Duration style indicator */}
-                          <div className="text-xs font-medium text-[#727272] flex-shrink-0 ml-4 font-mono">
-                            {track.year}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

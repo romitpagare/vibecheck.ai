@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Play, Pause, Plus, Trash2, Music, Filter, 
-  Check, MoreHorizontal, Shuffle, Heart, Disc3
+  Check, MoreHorizontal, Shuffle, Heart, Disc3, Download
 } from 'lucide-react';
 import { usePlayer } from '../PlayerContext';
 import { GENRES_DATA } from '../genresData';
@@ -9,7 +9,7 @@ import { PLAYLIST_COVERS } from '../genreImages';
 import { apiUrl, resolveAudioUrl } from '../config';
 
 export default function Playlists() {
-  const { playTrack, currentTrack, isPlaying } = usePlayer();
+  const { playTrack, currentTrack, isPlaying, downloadTrack } = usePlayer();
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [playlistSongs, setPlaylistSongs] = useState([]);
@@ -45,11 +45,18 @@ export default function Playlists() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setPlaylists(data);
-          if (!selectedPlaylist && data.length > 0) {
-            selectPlaylist(data[0]);
+          const sorted = [...data].sort((a, b) => {
+            if (a.name === 'All Analyzed Tracks') return -1;
+            if (b.name === 'All Analyzed Tracks') return 1;
+            if (a.name.endsWith(' Mix') && !b.name.endsWith(' Mix')) return -1;
+            if (!a.name.endsWith(' Mix') && b.name.endsWith(' Mix')) return 1;
+            return a.id - b.id;
+          });
+          setPlaylists(sorted);
+          if (!selectedPlaylist && sorted.length > 0) {
+            selectPlaylist(sorted[0]);
           } else if (selectedPlaylist) {
-            const updated = data.find(p => p.id === selectedPlaylist.id);
+            const updated = sorted.find(p => p.id === selectedPlaylist.id);
             if (updated) setSelectedPlaylist(updated);
           }
         }
@@ -240,6 +247,8 @@ export default function Playlists() {
           <div className="space-y-1 max-h-[620px] overflow-y-auto pr-1">
             {playlists.map((pl, idx) => {
               const isSelected = selectedPlaylist && selectedPlaylist.id === pl.id;
+              const isMaster = pl.name === 'All Analyzed Tracks';
+              const isGenreMix = pl.name.endsWith(' Mix');
               const thumbImg = PLAYLIST_COVERS[idx % PLAYLIST_COVERS.length];
               return (
                 <div
@@ -252,26 +261,41 @@ export default function Playlists() {
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 shadow-md relative bg-[#282828]">
-                      <img 
-                        src={thumbImg} 
-                        alt={pl.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-black/25" />
+                    <div 
+                      className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 shadow-md relative flex items-center justify-center"
+                      style={{ backgroundColor: pl.cover_color || '#282828' }}
+                    >
+                      {isMaster ? (
+                        <div className="w-full h-full bg-gradient-to-br from-[#1DB954] to-[#121212] flex items-center justify-center text-white">
+                          <Heart size={18} fill="white" />
+                        </div>
+                      ) : isGenreMix ? (
+                        <div className="w-full h-full flex items-center justify-center text-white/90">
+                          <Music size={18} />
+                        </div>
+                      ) : (
+                        <>
+                          <img 
+                            src={thumbImg} 
+                            alt={pl.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black/25" />
+                        </>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <h4 className={`text-sm font-bold truncate ${isSelected ? 'text-white' : 'group-hover:text-white'}`}>
                         {pl.name}
                       </h4>
                       <p className="text-xs text-[#727272] truncate mt-0.5">
-                        Playlist • {pl.song_count || 0} song{pl.song_count === 1 ? '' : 's'}
+                        {isMaster ? 'Master Library' : (isGenreMix ? 'Auto Genre Mix' : 'Custom Playlist')} • {pl.song_count || 0} track{pl.song_count === 1 ? '' : 's'}
                       </p>
                     </div>
                   </div>
 
-                  {pl.is_sample !== 1 && (
+                  {!isMaster && !isGenreMix && pl.is_sample !== 1 && (
                     <button
                       onClick={(e) => handleDeletePlaylist(pl.id, e)}
                       title="Delete playlist"
@@ -299,13 +323,31 @@ export default function Playlists() {
               >
                 {/* Album Cover Art */}
                 <div className="w-36 h-36 md:w-44 md:h-44 rounded-xl flex items-center justify-center text-white font-black text-5xl shadow-2xl flex-shrink-0 relative group overflow-hidden bg-[#282828] border border-white/10">
-                  <img 
-                    src={PLAYLIST_COVERS[(selectedPlaylist.id || 0) % PLAYLIST_COVERS.length]} 
-                    alt={selectedPlaylist.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors" />
+                  {selectedPlaylist.name === 'All Analyzed Tracks' ? (
+                    <div className="w-full h-full bg-gradient-to-br from-[#1DB954] via-[#107032] to-[#121212] flex items-center justify-center text-white">
+                      <Heart size={64} fill="white" className="text-white drop-shadow-xl" />
+                    </div>
+                  ) : selectedPlaylist.name.endsWith(' Mix') ? (
+                    <div 
+                      className="w-full h-full flex flex-col items-center justify-center text-white"
+                      style={{ backgroundColor: selectedPlaylist.cover_color || '#A78BFA' }}
+                    >
+                      <Music size={54} className="text-white drop-shadow-lg" />
+                      <span className="text-[11px] font-mono uppercase tracking-wider font-extrabold mt-2 text-white/90">
+                        Genre Mix
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <img 
+                        src={PLAYLIST_COVERS[(selectedPlaylist.id || 0) % PLAYLIST_COVERS.length]} 
+                        alt={selectedPlaylist.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors" />
+                    </>
+                  )}
 
                   {playlistSongs.length > 0 && (
                     <button
@@ -425,8 +467,18 @@ export default function Playlists() {
                             )}
                           </div>
 
-                          {/* Action (Remove from playlist) */}
-                          <div className="col-span-3 md:col-span-1 flex items-center justify-end">
+                          {/* Actions: Download MP3 & Remove from playlist */}
+                          <div className="col-span-3 md:col-span-1 flex items-center justify-end gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                downloadTrack(song);
+                              }}
+                              title="Download song in MP3 format"
+                              className="p-1.5 text-[#B3B3B3] hover:text-[#A78BFA] opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Download size={16} />
+                            </button>
                             <button
                               onClick={(e) => handleRemoveSong(song.playlist_song_id, e)}
                               title="Remove from playlist"

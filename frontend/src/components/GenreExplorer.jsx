@@ -3,10 +3,12 @@ import { GENRES_DATA } from '../genresData';
 import { GENRE_IMAGES } from '../genreImages';
 import { 
   ChevronDown, ChevronUp, Music, Disc, Sparkles, 
-  ExternalLink, Play, Radio, Volume2, CheckCircle2 
+  ExternalLink, Play, Pause, Radio, Volume2, CheckCircle2, Download 
 } from 'lucide-react';
+import { usePlayer } from '../PlayerContext';
 
 export default function GenreExplorer() {
+  const { playTrack, currentTrack, isPlaying, downloadTrack } = usePlayer();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [expandedGenreId, setExpandedGenreId] = useState(null);
 
@@ -162,30 +164,62 @@ export default function GenreExplorer() {
                       </span>
 
                       <div className="space-y-1.5">
-                        {genre.exampleTracks.map((trk, i) => (
-                          <div 
-                            key={i} 
-                            className="p-3 rounded-xl bg-[#141414] hover:bg-[#202020] border border-[#282828] flex items-center justify-between transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="w-5 text-center text-xs font-mono text-[#727272]">
-                                {i + 1}
-                              </span>
-                              <div>
-                                <h4 className="text-sm font-bold text-white leading-tight">
-                                  {trk.title}
-                                </h4>
-                                <p className="text-xs text-[#B3B3B3]">
-                                  {trk.artist}
-                                </p>
+                        {genre.exampleTracks.map((trk, i) => {
+                          const isThisTrack = currentTrack && currentTrack.title === trk.title;
+                          const isPlayingThis = isThisTrack && isPlaying;
+                          const trackObj = {
+                            title: trk.title,
+                            artist: trk.artist,
+                            filename: `${trk.artist} - ${trk.title}`,
+                            predicted_genre: genre.id
+                          };
+
+                          return (
+                            <div 
+                              key={i} 
+                              onClick={() => playTrack(trackObj)}
+                              className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
+                                isThisTrack 
+                                  ? 'bg-[#282828] border-[#A78BFA]/50 text-[#A78BFA]' 
+                                  : 'bg-[#141414] hover:bg-[#202020] border-[#282828] text-white'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-6 h-6 rounded-full bg-[#202020] group-hover:bg-[#A78BFA] group-hover:text-black flex items-center justify-center flex-shrink-0 transition-colors">
+                                  {isPlayingThis ? (
+                                    <Pause size={12} fill="currentColor" />
+                                  ) : (
+                                    <Play size={12} fill="currentColor" className="translate-x-0.5" />
+                                  )}
+                                </div>
+                                <div className="min-w-0 truncate">
+                                  <h4 className={`text-sm font-bold leading-tight truncate ${isThisTrack ? 'text-[#A78BFA]' : 'text-white'}`}>
+                                    {trk.title}
+                                  </h4>
+                                  <p className="text-xs text-[#B3B3B3] truncate">
+                                    {trk.artist}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className="text-xs font-mono text-[#727272]">
+                                  {trk.year}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    downloadTrack(trackObj);
+                                  }}
+                                  title="Download song in MP3 format"
+                                  className="p-1.5 rounded-lg text-[#727272] hover:text-[#A78BFA] hover:bg-[#282828] opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Download size={14} />
+                                </button>
                               </div>
                             </div>
-
-                            <span className="text-xs font-mono text-[#727272]">
-                              {trk.year}
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

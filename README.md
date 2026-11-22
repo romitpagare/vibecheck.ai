@@ -6,53 +6,53 @@
 ---
 
 ## 👥 Authors & Project Team
-- **Romit Pagare** (`EN24CA3020174`) – Audio Preprocessing Pipeline, Librosa DSP & Model Evaluation.
-- **Ritika Pandav** (`EN24CA3020173`) – Full-Stack Architecture, FastAPI Endpoints, SQLite Schema & UI/UX.
+- **Romit Pagare** – Audio Preprocessing Pipeline, Librosa DSP & Model Evaluation.
+- **Ritika Pandav** – Full-Stack Architecture, FastAPI Endpoints, SQLite Schema & UI/UX.
 
 ---
 
 ## ✨ Features
 - 🎧 **Any Audio Source**: Scan songs from YouTube links, Spotify tracks, or local `.mp3`/`.wav` file uploads.
 - 🧠 **Real Machine Learning**: 57 extracted acoustic features (MFCCs, Spectral Centroid, Rolloff, Zero Crossing Rate, and Tempo BPM) powered by Librosa & Scikit-learn.
-- 🎯 **Pinpoint Classification**: Predicts across 10 core GTZAN neural classes with a 180-tree ensemble Random Forest model (**99.2% Peak Accuracy**).
+- 🎯 **Pinpoint Classification**: Predicts across 10 core GTZAN neural classes with an ensemble Random Forest model (**99.2% Peak Accuracy**).
 - 📻 **20+ Sound Catalog & 26 Genres**: Dedicated **Indian Music** category (Punjabi, Haryanvi, Bhojpuri, Bollywood, Indian Classical, Sufi & Qawwali) + Modern global sound expansions (Lo-Fi, Synthwave, Indie Rock, Ambient, EDM).
 - 🎶 **Context-Aware Recommendations**: Automatically suggests the **Top 10 iconic tracks** matching the detected genre and language/cultural origin.
-- 🖤 **Spotify Dark Aesthetic**: Modern glassmorphism UI with Tailwind CSS, custom geometric typography, interactive Recharts distribution graphs, persistent bottom music player, and playlist manager.
+- 🖤 **Spotify Dark Aesthetic**: Modern glassmorphism UI with Tailwind CSS, custom geometric typography, interactive Recharts distribution graphs, persistent bottom music player with seekbar scrubbing, and smart playlist manager.
 
 ---
 
-## 🏛 3-Tier Architecture
+## 🏛️ 3-Tier Architecture
 1. **Frontend**: React 18, Vite, Tailwind CSS, Lucide Icons, Recharts, HTML5 Audio Player Context.
-2. **Backend**: Python 3.11, FastAPI (async REST endpoints), Uvicorn, SQLite3 (`melodymind.db`), `yt-dlp`, FFmpeg.
+2. **Backend**: Python 3.12, FastAPI (async REST endpoints), Uvicorn, SQLite3 (`melodymind.db`), `yt-dlp`, FFmpeg.
 3. **ML & DSP**: Librosa, NumPy, Scikit-learn (Random Forest Classifier), Joblib.
 
 ---
 
 ## 🚀 Quickstart & Local Setup
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/YOUR_USERNAME/vibecheck-ai.git
-cd vibecheck-ai
-```
+### 1. One-Click Launcher (Windows)
+Simply double-click `run_localhost.bat` in the root folder. It automatically activates the virtual environment, launches FastAPI on `http://127.0.0.1:8000`, starts Vite on `http://localhost:5173`, and opens the app in your browser!
 
-### 2. Backend Setup
+### 2. Manual Setup
+
+#### Backend Setup
 ```bash
 cd backend
 python -m venv venv
+
 # On Windows:
 .\venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
 
 pip install -r requirements.txt
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 *Backend runs on `http://127.0.0.1:8000` (API docs at `/docs`).*
 
-### 3. Frontend Setup
+#### Frontend Setup
 ```bash
-cd ../frontend
+cd frontend
 npm install
 npm run dev
 ```
@@ -62,7 +62,7 @@ npm run dev
 
 ## 📦 Production Deployment
 - **Frontend**: Deployable directly to **Vercel** or **Netlify** (root dir: `frontend`, build command: `npm run build`, output: `dist`).
-- **Backend**: Deployable to **Render**, **Railway**, or **Fly.io** using Python 3.11 and Uvicorn.
+- **Backend**: Deployable to **Render**, **Railway**, or **Fly.io** using Python and Uvicorn.
 
 ---
 

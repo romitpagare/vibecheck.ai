@@ -37,6 +37,17 @@ backend/samples/*.wav
 *.db-journal
 backend/melodymind.db
 
+# Archives & Binary Documents
+*.zip
+*.tar.gz
+*.rar
+*.pdf
+*.pptx
+*.ppt
+*.docx
+*.doc
+*.xlsx
+
 # OS & Editor generated files
 .DS_Store
 Thumbs.db
